@@ -18,12 +18,13 @@ pub fn part_two(input: &str) -> Option<i32> {
     .cycle() {
         frequency += int_value;
         if frequencies.contains(&frequency) {
-            break
+            return Some(frequency)
         } else {
             frequencies.insert(frequency);
         }
     }
-    Some(frequency)
+
+    None
 }
 
 #[cfg(test)]
