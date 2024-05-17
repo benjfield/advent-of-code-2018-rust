@@ -2,41 +2,28 @@ advent_of_code::solution!(1);
 use std::collections::HashSet;
 
 pub fn part_one(input: &str) -> Option<i32> {
-    let mut total = 0;
-
-    for string_value in input.lines() {
-        let int_value = string_value.parse::<i32>().unwrap();
-        total += int_value;
-    }
-
-    Some(total)
-
+    input
+    .lines()
+    .map(|str_v| str_v.parse::<i32>().unwrap())
+    .reduce(|total, int_v| total + int_v)
 }
 
 pub fn part_two(input: &str) -> Option<i32> {
     let mut frequency = 0;
-
     let mut frequencies = HashSet::new();
 
-    loop {
-        let mut found_answer = false;
-        for string_value in input.lines() {
-            let int_value = string_value.parse::<i32>().unwrap();
-            frequency += int_value;
-
-            if frequencies.contains(&frequency) {
-                found_answer = true;
-                break
-            } else {
-                frequencies.insert(frequency);
-            }
-        }
-
-        if found_answer {
-            break Some(frequency)
+    for int_value in input
+    .lines()
+    .map(|str_v| str_v.parse::<i32>().unwrap())
+    .cycle() {
+        frequency += int_value;
+        if frequencies.contains(&frequency) {
+            break
+        } else {
+            frequencies.insert(frequency);
         }
     }
-
+    Some(frequency)
 }
 
 #[cfg(test)]
