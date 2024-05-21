@@ -1,0 +1,85 @@
+
+pub fn part_one(input: &str) -> Option<u32> {
+    let re = Regex::new(r"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)").unwrap();
+    let (next_single_claim_rectangles, multiple_claim_rectangles) = input
+    .lines()
+    .map(
+        |line_str| {
+            let (_full, [
+                claim_number,
+                start_x,
+                start_y,
+                x_length,
+                y_length
+                ]
+            ) = re.captures(line_str).unwrap().extract();
+
+            let start_x_int = start_x.parse::<u32>().unwrap();
+            let x_length_int = x_length.parse::<u32>().unwrap();
+            let start_y_int = start_x.parse::<u32>().unwrap();
+            let y_length_int = start_x.parse::<u32>().unwrap();
+
+            Rectangle{
+                start_x: start_x_int,
+                finish_x: start_x_int + x_length_int - 1,
+                start_y: start_y_int,
+                finish_y: start_y_int + y_length_int - 1,
+            }
+        }
+    )
+    .fold(
+        (Vec::new(), Vec::new()),
+        |(single_claim_rectangles, mut multiple_claim_rectangles): (Vec<Rectangle>, Vec<Rectangle>), this_rectangle| {
+            let mut potential_single_claim_rectangles = vec![this_rectangle];
+            for multiple_claim_rectangle in multiple_claim_rectangles.clone().into_iter() {
+                let mut next_potential_single_claim_rectangles = Vec::new();
+                for potential_single_claim_rectangle in potential_single_claim_rectangles.into_iter() {
+                    let intersection_rectangle = get_insersection_rectangle(&potential_single_claim_rectangle, &multiple_claim_rectangle);
+                    if intersection_rectangle.is_none() {
+                        next_potential_single_claim_rectangles.push(potential_single_claim_rectangle);
+                    } else {
+                        next_potential_single_claim_rectangles.extend(potential_single_claim_rectangle.remainders_after_rectangle_removal(&intersection_rectangle.unwrap()));
+                    }
+                }
+                potential_single_claim_rectangles = next_potential_single_claim_rectangles;
+            }
+
+            let mut next_single_claim_rectangles = Vec::new();
+            for single_claim_rectangle in single_claim_rectangles.into_iter() {
+                let mut single_claim_rectangles_to_check = vec![single_claim_rectangle];
+                let mut next_single_claim_rectangles_to_check = Vec::new();
+                let mut next_potential_single_claim_rectangles = Vec::new();
+
+                for single_claim_rectangle_to_check in single_claim_rectangles_to_check.into_iter() {
+                    for potential_single_claim_rectangle in potential_single_claim_rectangles.into_iter() {
+                        let intersection_rectangle = get_insersection_rectangle(&potential_single_claim_rectangle, &single_claim_rectangle_to_check);
+                        if intersection_rectangle.is_none() {
+                            next_single_claim_rectangles_to_check.push(single_claim_rectangle_to_check);
+                            next_potential_single_claim_rectangles.push(potential_single_claim_rectangle);
+                        } else{
+                            let intersection_rectangle = intersection_rectangle.unwrap();
+                            next_single_claim_rectangles.extend(single_claim_rectangle.remainders_after_rectangle_removal(&intersection_rectangle));
+                            next_potential_single_claim_rectangles.extend(potential_single_claim_rectangle.remainders_after_rectangle_removal(&intersection_rectangle));
+                            multiple_claim_rectangles.push(intersection_rectangle);
+                        }
+                    }
+                }
+                potential_single_claim_rectangles = next_potential_single_claim_rectangles;
+            }
+
+            next_single_claim_rectangles.extend(potential_single_claim_rectangles);
+
+            (next_single_claim_rectangles, multiple_claim_rectangles)
+        }
+    )
+
+    let answer = multiple_claim_rectangles
+    .into_iter()
+    .fold( 0,
+        |total_size, this_rectangle| {
+            total_size + this_rectangle.size()
+        }
+    );
+
+    Some(answer)
+}
