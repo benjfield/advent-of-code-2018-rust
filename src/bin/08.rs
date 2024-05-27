@@ -1,5 +1,3 @@
-use std::fs::Metadata;
-
 advent_of_code::solution!(8);
 
 struct NavNode {
@@ -49,25 +47,25 @@ impl NavNode{
     }
 }
 
-fn get_next_node(mut numbers_list: Vec<u32>) -> (NavNode, Vec<u32>) {
+fn get_next_node(numbers_list: &[u32]) -> (NavNode, &[u32]) {
     let child_node_numbers = numbers_list[0];
     let metadata_entries = numbers_list[1];
 
     let mut children = Vec::new();
 
-    numbers_list = numbers_list[2..].to_vec();
+    let mut remaining_numbers_list = &numbers_list[2..];
 
     for _ in 0..child_node_numbers {
         let child: NavNode;
-        (child, numbers_list) = get_next_node(numbers_list);
+        (child, remaining_numbers_list) = get_next_node(remaining_numbers_list);
         children.push(Box::new(child));
     }
 
-    let metadata = numbers_list[..(metadata_entries as usize)].to_vec();
+    let metadata_entries_size = metadata_entries as usize;
 
-    let remainder = numbers_list[(metadata_entries as usize)..].to_vec();
+    let metadata = remaining_numbers_list[..metadata_entries_size].to_vec();
 
-    (NavNode{children: children, metadata: metadata}, remainder)
+    (NavNode{children: children, metadata: metadata}, &remaining_numbers_list[metadata_entries_size..])
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
@@ -79,7 +77,7 @@ pub fn part_one(input: &str) -> Option<u32> {
         }
     ).collect();
 
-    let (node, _) = get_next_node(numbers_list);
+    let (node, _) = get_next_node(&numbers_list);
 
     Some(node.metadata_total())
 }
@@ -93,7 +91,7 @@ pub fn part_two(input: &str) -> Option<u32> {
         }
     ).collect();
 
-    let (node, _) = get_next_node(numbers_list);
+    let (node, _) = get_next_node(&numbers_list);
 
     Some(node.metadata_value())
 }
