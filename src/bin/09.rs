@@ -1,5 +1,5 @@
 use regex::Regex;
-use std::{collections::VecDeque, env::current_exe, iter};
+use std::{collections::VecDeque, iter};
 advent_of_code::solution!(9);
 
 
@@ -17,7 +17,7 @@ pub fn part_one(input: &str) -> Option<u32> {
 
     let mut scores: Vec<u32> = iter::repeat(0).take(total_number_of_players as usize).collect();
 
-    for marble_to_add in 2..last_marble_score + 1 {
+    for marble_to_add in 2..=last_marble_score {
         if marble_to_add % 23 == 0 {
             let player_number_size = (marble_to_add % total_number_of_players) as usize;
             scores[player_number_size] += marble_to_add;
